@@ -8,8 +8,8 @@ my_sensehat = SenseHat()
 camera = PiCamera()
 
 # Initiliaze global constant values
-ACCELERATION_THRESHOLD = 0
-ORIENTATION_THRESHOLD = 0
+ACCELERATION_THRESHOLD = 10
+ORIENTATION_THRESHOLD = 30
 FRIDGE_DOOR_OPEN = False
 IMAGE_DIRECTORY = '/home/pi/Desktop/fridge_pictures/image'
 image_counter = 0
@@ -29,21 +29,17 @@ def main():
 
             # If the FRIDGE_DOOR_OPEN bool is still set to false
             if (not FRIDGE_DOOR_OPEN):
-                acceleration_data = get_acceleration()
                 orientation_data = get_orientation()
-
-                x_acceleration = acceleration_data[0]
-                y_acceleration = acceleration_data[1]
-                z_acceleration = acceleration_data[2]
 
                 pitch_value = orientation_data[0]
                 roll_value = orientation_data[1]
                 yaw_value = orientation_data[2]
-
-                # If accelerometer detects that the fridge door has been opened
-                if (x_acceleration >= ACCELERATION_THRESHOLD):
+                
+                # If orientation detects that the fridge door has been opened
+                if (yaw_value >= ORIENTATION_THRESHOLD):
                     # Update FRIDGE_DOOR_OPEN value
                     FRIDGE_DOOR_OPEN = True
+                    
             else:
                 # Call the detect_fridge_door_close function
                 detect_fridge_door_close()
@@ -94,23 +90,32 @@ def take_picture():
 def detect_fridge_door_close():
     global FRIDGE_DOOR_OPEN
     global ACCELERATION_THRESHOLD
+    global ORIENTATION_THRESHOLD
 
     seconds_passed = 0
 
     while (FRIDGE_DOOR_OPEN):
         acceleration_data = get_acceleration()
+        orientation_data = get_orientation()
+        
         x_acceleration = acceleration_data[0]
         y_acceleration = acceleration_data[1]
         z_acceleration = acceleration_data[2]
-
-        if (x_acceleration >= ACCELERATION_THRESHOLD):
+        
+        pitch_value = orientation_data[0]
+        roll_value = orientation_data[1]
+        yaw_value = orientation_data[2]
+                    
+        #if yaw > ORIENTATION_THRESHOLD, 
+        
+        if (yaw_value >= ORIENTATION_THRESHOLD):
             FRIDGE_DOOR_OPEN = False
 
             while (seconds_passed < 10 and (not FRIDGE_DOOR_OPEN)):
-                acceleration_data2 = get_acceleration()
-                x_acceleration2 = acceleration_data2[0]
+                orientation_data2 = get_orientation()
+                yaw_value2 = orientation_data2[2]
 
-                if (x_acceleration2 >= ACCELERATION_THRESHOLD):
+                if (yaw_value2 >= ORIENTATION_THRESHOLD):
                     seconds_passed = 0
                     FRIDGE_DOOR_OPEN = True
                 else:

@@ -1,3 +1,4 @@
+from picamera import Picamera
 from sense_hat import SenseHat
 from time import sleep
 
