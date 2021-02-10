@@ -1,4 +1,4 @@
-from picamera import Picamera
+from picamera import PiCamera
 from sense_hat import SenseHat
 from time import sleep
 
@@ -7,9 +7,12 @@ my_sensehat = SenseHat()
 # Create instance of PiCamera object
 camera = PiCamera()
 
+# Initialize orientation
+initial_orientation = my_sensehat.get_orientation()
+
 # Initiliaze global constant values
 ACCELERATION_THRESHOLD = 10
-ORIENTATION_THRESHOLD = 30
+ORIENTATION_THRESHOLD = initial_orientation['yaw']
 FRIDGE_DOOR_OPEN = False
 IMAGE_DIRECTORY = '/home/pi/Desktop/fridge_pictures/image'
 image_counter = 0
@@ -35,8 +38,10 @@ def main():
                 roll_value = orientation_data[1]
                 yaw_value = orientation_data[2]
                 
+                print (orientation_data)
+                
                 # If orientation detects that the fridge door has been opened
-                if (yaw_value >= ORIENTATION_THRESHOLD):
+                if (yaw_value > ORIENTATION_THRESHOLD+30 or yaw_value < ORIENTATION_THRESHOLD-30):
                     # Update FRIDGE_DOOR_OPEN value
                     FRIDGE_DOOR_OPEN = True
                     
@@ -78,11 +83,13 @@ def get_orientation():
 def take_picture():
     global IMAGE_DIRECTORY
     # Create the image_filepath string
-    image_filepath = IMAGE_DIRECTORY + image_counter + '.jpg'
+    image_filepath = IMAGE_DIRECTORY + str(image_counter) + '.jpg'
     # Take a picture
+    camera.rotation = 270
     camera.start_preview()
     sleep(2)
     camera.capture(image_filepath)
+    camera.stop_preview()
 
 # Function to determine when the fridge door has been closed for an acceptable amount of time
 
@@ -108,18 +115,22 @@ def detect_fridge_door_close():
                     
         #if yaw > ORIENTATION_THRESHOLD, 
         
-        if (yaw_value >= ORIENTATION_THRESHOLD):
+        if (yaw_value > ORIENTATION_THRESHOLD+30 or yaw_value < ORIENTATION_THRESHOLD-30):
             FRIDGE_DOOR_OPEN = False
+            print(FRIDGE_DOOR_OPEN)
+            print("checking yaw against threshold.")
 
-            while (seconds_passed < 10 and (not FRIDGE_DOOR_OPEN)):
+            while (seconds_passed < 3 and (not FRIDGE_DOOR_OPEN)):
                 orientation_data2 = get_orientation()
                 yaw_value2 = orientation_data2[2]
 
-                if (yaw_value2 >= ORIENTATION_THRESHOLD):
+                if (yaw_value2 > ORIENTATION_THRESHOLD+30 or yaw_value < ORIENTATION_THRESHOLD-30):
                     seconds_passed = 0
                     FRIDGE_DOOR_OPEN = True
+                    print("Fridge door open is true!")
                 else:
                     sleep(1)
+                    print("sleeping for a sec...")
                     seconds_passed += 1
 
 
