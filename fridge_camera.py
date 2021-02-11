@@ -3,12 +3,12 @@ from sense_hat import SenseHat
 from time import sleep
 
 # Create instance of SenseHat object
-my_sensehat = SenseHat()
+sense = SenseHat()
 # Create instance of PiCamera object
 camera = PiCamera()
 
 # Initialize orientation
-initial_orientation = my_sensehat.get_orientation()
+initial_orientation = sense.get_orientation()
 
 # Initiliaze global constant values
 ACCELERATION_THRESHOLD = 10
@@ -64,7 +64,7 @@ def main():
 
 def get_acceleration():
     # Call the get_accelerometer_raw method of the SenseHat object
-    acceleration = my_sensehat.get_accelerometer_raw()
+    acceleration = sense.get_accelerometer_raw()
     # Return the acceleration values from the acceleration dictionary in a tuple
     return (acceleration['x'], acceleration['y'], acceleration['z'])
 
@@ -73,7 +73,7 @@ def get_acceleration():
 
 def get_orientation():
     # Call the get_orientation method of the SenseHat object
-    orientation = my_sensehat.get_orientation()
+    orientation = sense.get_orientation()
     # Return the orientation values from the orientation dictionary in a tuple
     return (orientation['pitch'], orientation['roll'], orientation['yaw'])
 
@@ -86,10 +86,12 @@ def take_picture():
     image_filepath = IMAGE_DIRECTORY + str(image_counter) + '.jpg'
     # Take a picture
     camera.rotation = 270
+    sense.clear((255,255,255))
     camera.start_preview()
     sleep(2)
     camera.capture(image_filepath)
     camera.stop_preview()
+    sense.clear()
 
 # Function to determine when the fridge door has been closed for an acceptable amount of time
 
